@@ -1,0 +1,269 @@
+#Introduction to R Programing (DATA CLEANING AND MANAGEMENT)
+ 
+# Importing/reading data into R
+#There are multiple ways to do so
+
+#First one: Setup a working directory, and refer to the working directory to import the data
+setwd("M:/Courses_EX/Multivariate Statistics and Visual Analytics 2024/rcode_605")
+
+list.files()
+directory_data1<-read.csv("iris.csv")
+# if the dataset is in the text, then code will be 
+directory_data2<-read.table("iris.txt")
+
+###what if data is in .xlsx format (we will need to install a library/package so that R can recognize the xlsx format
+install.packages("readxl")
+library("readxl")
+directory_data3<-read_excel("renew_behavior_xxx_logit.xlsx")
+
+#second way to import the data is 
+direct_import1<-read.table("M:/Courses_EX/Multivariate Statistics and Visual Analytics 2024/rcode_605/iris.txt", header=T)
+direct_import2<-read.csv("M:/Courses_EX/Multivariate Statistics and Visual Analytics 2024/rcode_605/data_corr_mkt.csv", header=T)
+direct_import3<-read_excel("M:/Courses_EX/Multivariate Statistics and Visual Analytics 2024/rcode_605/renew_behavior_xxx_logit.xlsx")
+
+
+#####Exploring a dataset#####
+# Exploring datasets
+direct_import2<-read.csv("M:/Courses_EX/Multivariate Statistics and Visual Analytics 2024/rcode_605/rcode_class/data_corr_mkt.csv", header=T)
+
+View(direct_import2)  # allows us to view the data set
+names(direct_import2)  # names of the variables 
+dim(direct_import2)  # dimension (number of rows and columns)
+str(direct_import2)  # structure of the data set
+str(direct_import2,5)  #provides structure of the data set along with number of obs and variables
+
+
+class(direct_import2)  # type of data (numeric, character, integer, logical, complex
+##seeing data (last and first rows)
+head(direct_import2, n = 5)  # displays the first 5 rows 
+tail(direct_import2, n = 5)  # displays the last 5 rows
+
+
+#Getting summary statistics (How do we know which packages to use where?)
+install.packages("Hmisc")#Contains many functions useful for data analysis, high-level graphics, utility operations, functions for computing sample size and power
+library(Hmisc)
+install.packages("pastecs")#https://cran.r-project.org/web/packages/pastecs/index.html (SPACE-TIME SERRIES)
+library(pastecs)
+install.packages("psych")#https://cran.r-project.org/web/packages/psych/index.html (FOR ALL DESCRIPTIVES)
+library(psych)
+summary(direct_import2)#this provides you with the descriptive statistics of each variable
+summary(direct_import2$Sales)# to check the descriptive of a specific variable
+
+#We will use the fivenum() function next. The fivenum() function displays the min, max, median, lower-hinge and upper-hinge values. 
+#The lower hinge is the smallest data value that is larger than the first quartile.
+#The upper hinge is the largest data value that is smaller than the third quartile. 
+fivenum(direct_import2$Sales)
+
+describe(direct_import2$Sales) # we have to load the HMISC package and describe is a part of it. it gives number of rows, SD, TRIMMED MEAN, mad, skewness, kurtosis, std error
+stat.desc(direct_import2$Sales)# we need to load it after installing. it is a part of pastecs that gives var, coefficient of variation, and confidence interval of mean
+
+#We will be dealing with cleaned data in the course. Most of the datasets will be structured. If you want to know anout data cleaning or deal with unstructured datasets, let me know, and we will have a separate session outside our classes. ###########################################################Data Cleaning###################################################################
+
+
+
+##Arithmatic operations
+direct_import2<-read.csv("M:/Courses_EX/Multivariate Statistics and Visual Analytics 2024/rcode_605/data_corr_mkt.csv", header=T)
+View(direct_import2)
+names(direct_import2)
+###three ways
+##First 
+direct_import2$sum<-direct_import2$Price+direct_import2$Promotion
+
+names(direct_import2)
+#second
+attach(direct_import2)
+direct_import2$sum1<- Price+Promotion
+direct_import2$mean1<- (Price+Promotion)/2
+detach(direct_import2)
+names(direct_import2)
+
+##Third
+data4<-transform(direct_import2,
+sum2=Price+Promotion,
+mean2=(Price+Promotion)/2)
+names(data4)
+
+###Recoding a variable
+summary(data4$Price)
+# create 2 age categories
+data4$Price <- ifelse(data4$Price > 554,
+c("high_price"), c("low_price"))
+View(data4)
+
+# Another example: create 3 price categories
+attach(data4)
+data4$Price[Price > 700] <- "High"
+data4$Price[Price>= 400 & Price <= 700] <- "Medium"
+data4$Price[Price <400] <- "Low"
+detach(data4)
+View(data4)
+
+#Export Data
+write.csv(dataframe,"Path/filename.csv", row.names = FALSE)
+
+#####################Module 1-Visual Analytics
+#Visual Analytics (use of graphs to represent data and generating insights)
+#We will use "HistData: Data Sets from the History of Statistics and Data Visualization" [see https://cran.r-project.org/web/packages/HistData/].This package provides a few small datasets to learn visual analytics 
+#We will use three packages ggplot2, RColorBrewer, and tidyverse. ggplot2 is a powerful package for visual analytics
+#Loading packages
+install.packages("ggplot2")
+library("ggplot2")
+install.packages("tidyverse")
+library("tidyverse")
+install.packages("RColorBrewer")
+library("RColorBrewer")
+install.packages("HistData")
+library("HistData")
+
+#Line Plot (used to see trend in the data. The data should be arranged over time)
+View(AirPassengers)#informs number of air passenger over time 
+plot(AirPassengers,type="l")#A simple plot shows that there is an increase in number of passenger over time. 
+
+#Bar plot (Horizontal)[used to compare cumulative totals across several categories]
+#Airquality dataset: Daily air quality measurements in New York, May to September 1973 (see https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/airquality)
+barplot(airquality$Ozone, 
+        main = 'Ozone Concenteration in air', 
+        xlab = 'ozone levels', horiz = TRUE) 
+
+#Barplot (vertical)
+barplot(airquality$Ozone, main = 'Ozone Concenteration in air',  
+        xlab = 'ozone levels', col ='blue', horiz = FALSE) 
+
+#Histogram (a representation that breaks the data into bins and then capture the frequency distribution of each bin)
+Temperature <- airquality$Temp
+hist(Temperature)
+
+
+#Slightly better looking histogram
+
+hist(Temperature,
+main="Max Temp (daily)",
+xlab="Temperature in F",
+xlim=c(10,100),
+col="blue",
+freq=FALSE)
+
+#Defining breaks
+hist(Temperature, breaks=5, main="With breaks=5")
+hist(Temperature, breaks=10, main="With breaks=10")
+
+hist(VADeaths,breaks=10, col=brewer.pal(3,"Set3"),main="Set3 3 colors")
+
+#Retrieving data
+data<-data(VADeaths)#Death rates per 1000 in Virginia in 1940 [https://www.rdocumentation.org/packages/datasets/versions/3.6.2/topics/VADeaths]
+
+data(VADeaths)
+hist(VADeaths,breaks=10, col=brewer.pal(5,"Set3"),main="Set3 5 colors")#The col=brewer.pal(5,"Set3") means that 5 colors are taken from set 3 in RColorBrewer [see details here https://cran.r-project.org/web/packages/RColorBrewer/index.html] 
+
+
+
+#Box Plot [shows 5 statistically significant numbers- the minimum, the 25th percentile, the median, the 75th percentile and the maximum]
+data(iris)
+
+par(mfrow=c(2,2))
+boxplot(iris$Sepal.Length,col="red")#Gives one box plot for Sepal.Length, color red
+boxplot(iris$Sepal.Length~iris$Species,col="red")#Gives box plot/species for Sepal.Length, color red
+boxplot(iris$Sepal.Length~iris$Species,col=heat.colors(3))##Gives box plot/species for Sepal.Length,heat.colors(3)=create a ramp of contiguous colors clustered around the color orange in the red spectrum of the RGB scale
+boxplot(iris$Sepal.Length~iris$Species,col=topo.colors(3))#Gives box plot/species for Sepal.Length, topo.colors= generate a Vector of specified length with each element as a unique color on RGB scale
+#For details on color, see https://www.r-bloggers.com/2010/06/color-palettes-in-r/
+
+#Scatter plot (used for visualizing data easily and for simple data inspection)
+plot(iris,col=brewer.pal(3,"Set1"))#for all the variables 
+plot(x=iris$Petal.Length) #Simple Scatter Plot
+plot(iris$Sepal.Length~iris$Petal.Length) #Representing two variables (will be used for correlation and regression)
+
+#Heat maps [exploratory data analysis with two dimensions as the axis and the third dimension shown by intensity of color]
+heatmap(as.matrix(mtcars))#convert the dataset to a matrix format
+image(as.matrix(b[2:7]))
+
+#Maps
+install.packages("maps")
+library(maps)
+
+# Read dataset and convert it into dataframe 
+data <- read.csv("C:/Users/vishal.malhotra/Desktop/ISTM 660- Amalesh Sharma Screen Recordings/Recoding/Module 1/Module 1-worldcities.csv", header=T)
+View(data)
+df <- data.frame(data) 
+  
+# Load the required libraries 
+library(maps) 
+map(database = "world") 
+    
+# marking points on map 
+points(x = df$lat[1:500], y = df$lng[1:500], col = "Red") 
+
+
+#3D visuals
+#Example 1
+install.packages(c("rgl", "car"))
+library("car")
+library("rgl")
+data(iris)
+head(iris)
+
+sep.l <- iris$Sepal.Length
+sep.w <- iris$Sepal.Width
+pet.l <- iris$Petal.Length
+
+scatter3d(x = sep.l, y = pet.l, z = sep.w)
+
+#Example 2
+# import and load rgl package 
+install.packages("rgl") 
+library(rgl) 
+  
+# Generate some sample data 
+p <- seq(-5, 6, by = 0.1) 
+q <- seq(-5, 7, by = 0.1) 
+r <- outer(p, q, function(p, q) dnorm(sqrt(p^2 + q^2))) 
+  
+# Create a 3D surface plot 
+persp3d(p, q, r, col = "blue") 
+             
+# add animation 
+play3d(spin3d(axis = c(0, 0, 1)), duration = 10)
+
+
+####Data Exploration
+install.packages("dplyr")
+install.packages("xtable")
+library(dplyr)
+library(xtable)
+data(swiss)# see details about the dataset here https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/swiss.html
+View(swiss)
+
+#What the data is about: A data frame with 47 observations on 6 variables, each of which is in percent (0,100)
+#Fertility: common standardized fertility measure; Agriculture: % of males involved in agriculture as occupation
+#Examination: % draftees receiving highest mark on army examination
+#Education: % education beyond primary school for draftees; Catholic: %catholic (as opposed to protestant).
+#Infant.Mortality: live births who live less than 1 year.
+
+#Visuals
+scatter.smooth(x=swiss$Fertility, y=swiss$Infant.Mortality, main="Infant.Mortality ~ Fertility")  # scatterplot
+par(mfrow=c(1, 2))  # divide graph area in 2 columns
+boxplot(swiss$Fertility, main="Fertility", sub=paste("Outlier rows: ", boxplot.stats(swiss$Fertility)$out))  # box plot for 'fertility'
+boxplot(swiss$Infant.Mortality, main="Infant.Mortality", sub=paste("Outlier rows: ", boxplot.stats(swiss$Infant.Mortality)$out))  # box plot for 'mortality'
+
+###Density Plot
+install.packages("e1071")
+library(e1071)
+
+par(mfrow=c(1, 2))  # divide graph area in 2 columns
+plot(density(swiss$Fertility), main="Density Plot: Fertility", ylab="Frequency", sub=paste("Skewness:", round(e1071::skewness(swiss$Fertility), 2)))  # density plot fertility
+polygon(density(swiss$Fertility), col="red")
+plot(density(swiss$Infant.Mortality), main="Density Plot: Distance", ylab="Frequency", sub=paste("Skewness:", round(e1071::skewness(swiss$Infant.Mortality), 2)))  # density plot for mortality
+polygon(density(swiss$Infant.Mortality), col="red")
+
+
+#References
+1.http://www.belle-pro.com/c333e0c/data-visualizations-are-used-to-explore-a-given-dataset-e07653
+2.https://www.analyticsvidhya.com/blog/2015/07/guide-data-visualization-r/
+3. https://www.geeksforgeeks.org/descriptive-analysis-in-r-programming/
+4. https://statsandr.com/blog/descriptive-statistics-in-r/
+5. https://www.geeksforgeeks.org/data-visualization-in-r/
+6. "Modern Data Visualization with R" by Robert Kabacoff [access through https://rkabacoff.github.io/datavis/]
+7. For in depth visualization in R, see https://ladal.edu.au/introviz.html and https://intellipaat.com/blog/tutorial/r-programming/data-visualization-in-r/
+
+#Disclaimer: This document is for classroom discussion only. It includes intellectual contributions from various authors available from multiple sources. The instructor uses this information for classroom discussion and student learning and thanks the various authors.
+
+
